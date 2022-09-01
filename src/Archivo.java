@@ -18,23 +18,40 @@ public class Archivo {
         promedio=sc.nextFloat();
         Alumno AltaAlumno= new Alumno(nombre,noControl,Semestre,promedio);
         FileOutputStream fichero1=null;
-
-        try {
-            fichero1 = new FileOutputStream("1.txt");
-            ObjectOutputStream pipe = new ObjectOutputStream(fichero1);
-            pipe.writeObject(AltaAlumno);
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-        }catch (IOException ex){
-            ex.printStackTrace();
-        }finally {
-            try{
-                fichero1.close();
+        FileOutputStream fichero2=null;
+        if(promedio<=6.9){
+            try {
+                fichero1 = new FileOutputStream("1.txt");
+                ObjectOutputStream pipe = new ObjectOutputStream(fichero1);
+                pipe.writeObject(AltaAlumno);
+            }catch (FileNotFoundException e){
+                e.printStackTrace();
             }catch (IOException ex){
                 ex.printStackTrace();
+            }finally {
+                try{
+                    fichero1.close();
+                }catch (IOException ex){
+                    ex.printStackTrace();
+                }
+            }
+        }else{
+            try {
+                fichero2 = new FileOutputStream("2.txt");
+                ObjectOutputStream pipe = new ObjectOutputStream(fichero2);
+                pipe.writeObject(AltaAlumno);
+            }catch (FileNotFoundException e){
+                e.printStackTrace();
+            }catch (IOException ex){
+                ex.printStackTrace();
+            }finally {
+                try{
+                    fichero2.close();
+                }catch (IOException ex){
+                    ex.printStackTrace();
+                }
             }
         }
-
     }
     public void Modificar(){
         System.out.println("Modificar");
@@ -42,6 +59,7 @@ public class Archivo {
     }
     public void Mostrar(){
             FileInputStream ficheroEntrada=null;
+            FileInputStream ficheroEntrada2=null;
             Alumno alu;
             try{
                 ficheroEntrada=new FileInputStream("1.txt");
@@ -55,6 +73,18 @@ public class Archivo {
             }catch (ClassNotFoundException ex){
                 ex.printStackTrace();
             }
+            try{
+            ficheroEntrada2=new FileInputStream("2.txt");
+            ObjectInputStream PipeIn=new ObjectInputStream(ficheroEntrada2);
+            alu=(Alumno) PipeIn.readObject();
+            alu.mostrarAlumno();
+            }catch(FileNotFoundException ex){
+            ex.printStackTrace();
+            }catch(IOException ex){
+            ex.printStackTrace();
+            }catch (ClassNotFoundException ex){
+            ex.printStackTrace();
+        }
         }
     }
 
