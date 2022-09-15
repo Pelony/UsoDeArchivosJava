@@ -20,9 +20,9 @@ public class Main {
                 System.out.println("Teclea la opcion que deseas usar");
                 opcion=sc.nextInt();
                 switch (opcion){
-                    case 1:arc.Altas();break;
-                    case 2:arc.Modificar();break;
-                    case 3:arc.Mostrar();break;
+                    case 1:arc.ingresar();break;
+                    case 2:arc.modificar();break;
+                    case 3:arc.show();break;
                     case 4:salir=true; break;
                 }
             } catch (InputMismatchException e) {

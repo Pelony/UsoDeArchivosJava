@@ -1,7 +1,6 @@
 import java.io.Serializable;
 
 public class Alumno implements Serializable {
-    private static final long serialVersionUID = 6529685098267757690L;
     private String nombre;
     private Integer noControl,Semestre;
     private Float promedio;
@@ -12,6 +11,9 @@ public class Alumno implements Serializable {
         Semestre = semestre;
         this.promedio = promedio;
     }
+
+
+
     public void mostrarAlumno(){
         System.out.println("noControl: "+ noControl);
         System.out.println("Nombre: "+ nombre);
@@ -33,13 +35,16 @@ public class Alumno implements Serializable {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
+    public void setNoControl(Integer noControl) {
+        this.noControl = noControl;
+    }
+    public void setPromedio(Float promedio) {
+        this.promedio = promedio;
+    }
     public Integer getSemestre() {
         return Semestre;
     }
     public void setSemestre(Integer semestre) {
         Semestre = semestre;
     }
-
-    
-
 }

@@ -1,6 +1,10 @@
 import java.io.*;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
-import java.util.ArrayList;
+
 
 public class Archivo {
     Scanner sc=new Scanner(System.in);
@@ -8,139 +12,180 @@ public class Archivo {
     float promedio;
     String nombre,opc="";
 
-    public void Altas() throws ClassNotFoundException, IOException{
-        do{
-            System.out.println("Altas");
-            System.out.println("Ingresa el Numero de control del alumno");
-            noControl=sc.nextInt();
-            System.out.println("Ingresa el Nombre del alumno");
-            nombre=sc.next();
-            System.out.println("Ingresa el semestre del alumno");
-            Semestre=sc.nextInt();
-            System.out.println("Ingresa el promedio del alumno");
-            promedio=sc.nextFloat();
-            Alumno AltaAlumno= new Alumno(nombre,noControl,Semestre,promedio);
-            if(promedio<=69){
-                insertOneStudent("1.txt", AltaAlumno);
-              
-            }else{
-                insertOneStudent("2.txt", AltaAlumno);
-            }
-            System.out.println("Si ya no quieres ingresar mas alumnos teclea si");
-            opc=sc.next();
-        }while(opc.contains("s"));
-    }
+    RandomAccessFile salida;
+    int a_tamaRegistro= 29, v_numRenglones, pm;  
+
     
-   
-    public void Mostrar() throws ClassNotFoundException, IOException{
-            System.out.println("-------------Alumnos Reprobados-----------");
-            ArrayList<Alumno> studentsFailed = getAllStudents("1.txt");
-            if(studentsFailed!=null)
-            studentsFailed.forEach((n) -> n.mostrarAlumno());
-            System.out.println("------------------------------------------\n");
-
-            System.out.println("-------------Alumnos Aprobados-----------");
-            ArrayList<Alumno> studentsApproved = getAllStudents("2.txt");
-            if(studentsApproved!=null)
-            studentsApproved.forEach((n) -> n.mostrarAlumno());
-            System.out.println("------------------------------------------\n");
-        }
-
-
-
-
-        public ArrayList<Alumno> getAllStudents(String nameFile)throws ClassNotFoundException, IOException{
-            ArrayList<Alumno> listStudents = new ArrayList<Alumno>();
-            try{
-            FileInputStream fileIn = new FileInputStream(nameFile);
-            ObjectInputStream input=null; 
-                input = new ObjectInputStream(fileIn);
-                listStudents = (ArrayList<Alumno>) input.readObject();
-                fileIn.close();
-               
-            }catch(EOFException  ex){
-                
-            }
-            catch (FileNotFoundException e){
-              return null;
-            }
-        return listStudents;
+    public void ingresar(){
+        String nombre;
+        int noControl, semestre;
+        float promedio;
+                System.out.println("Ingresa el noControl del alumno");
+                noControl=sc.nextInt();
+                System.out.println("Ingresa el nombre del alumno");
+                do{
+                    nombre=sc.next();
+                    nombre = formatString(15, nombre);
+                    if(nombre==null)
+                    System.out.println("Ingresa un nombre con 15 caracteres como máximo");
+                }while(nombre==null);
+                System.out.println("Ingresa el semestre del alumno");
+                semestre=sc.nextInt();
+                System.out.println("Ingresa el promedio del alumno");
+                promedio=sc.nextFloat();
+                Alumno alumno = new Alumno(nombre, noControl, semestre, promedio);
+                insertStudent(alumno, (promedio<70?"reprobados.dat":"aprobados.dat"));
     }
 
 
+    
+    public void insertStudent(Alumno alumno, String fileName){
+         try
+         {
+             RandomAccessFile input =new RandomAccessFile(fileName,"rw");
+             input.seek(input.length()); 
+             input.writeInt(alumno.getNoControl());
+             input.writeUTF(alumno.getNombre());
+             input.writeInt(alumno.getSemestre());
+             input.writeFloat(alumno.getPromedio());
+             input.close(); 
+         }
+         catch (IOException e)
+         {
+             System.out.println("No se logro abrir correctamente el fichero \n"+e.toString());
+         }
+ }
 
-        public void Modificar()throws ClassNotFoundException, IOException{
-            Scanner sc=new Scanner(System.in);
-            System.out.println("Ingresa el numero de control del alumno a modificar");
-            int noControl =sc.nextInt();
-           Alumno a = getIdStudent(noControl);
-            if (a!=null){
-                float promedio;
-                System.out.println("Editar al alumno con el numero de control: " + a.getNoControl());
-                System.out.println("Ingresa el nuevo promedio del alumno");
-                promedio=sc.nextFloat();
-                Alumno alumnoedit = new Alumno(a.getNombre(),a.getNoControl(), a.getSemestre(), promedio);
-                if(a.getPromedio()<70){
-                    dropOneStudent("1.txt", a.getNoControl());
-                }
-                else {
-                    dropOneStudent("2.txt", a.getNoControl());
-                }
-                if(promedio<70){
-                    insertOneStudent("1.txt", alumnoedit);
-                }
-                else{
-                    insertOneStudent("2.txt", alumnoedit);
-                }
+
+
+    public String formatString(int maxLength, String string){
+        if(!(string.length()>maxLength)){
+            int i = maxLength - string.length();
+            for(;i>0;i--)
+                string+= " ";
+            return string;
             }
-            else
-            System.out.println("El alumno no existe");
-        }
+        else 
+        return null;
+    }
 
-        public void dropOneStudent(String nameFile, int noControl)throws ClassNotFoundException, IOException{
-            ArrayList<Alumno> students = getAllStudents(nameFile);
-            for(int i=0;students.size()>i;i++){
-                if (students.get(i).getNoControl() == noControl){
-                    students.remove(i);
-                    i=students.size()+1; //para salir del for xD
-                }
-            }
-            
-            FileOutputStream fichero1 = new FileOutputStream(nameFile);
-            ObjectOutputStream pipe = new ObjectOutputStream(fichero1);
-            pipe.writeObject(students);
-              pipe.close();
-              pipe.flush();
-              fichero1.close();
-              fichero1.flush();
-            //
-        }
 
-        public Alumno getIdStudent (int noControl)throws ClassNotFoundException, IOException{
-            ArrayList<Alumno> students;
-            for(int i=0;i<2;i++){
-                students = getAllStudents((i+1)+".txt");
-            for (Alumno a: students) {
-                if(a.getNoControl() == noControl)
-                    return a;
-              }
-            }
-             return null; 
-        }
-
-        public void insertOneStudent (String nameFile, Alumno a)throws ClassNotFoundException, IOException{
-            ArrayList<Alumno> list =  getAllStudents(nameFile);
-            if (list==null){
-                list = new  ArrayList<Alumno>();
+    public void show() {  
+        String nombre;
+        int noControl, semestre;
+        float promedio; 
+        for(int a =0;a<2;a++){
+        try
+        {
+            RandomAccessFile output =new RandomAccessFile((a==0?"aprobados.dat":"reprobados.dat"),"rw");
+            long registros=output.length()/a_tamaRegistro;
+            System.out.println("-------------"+(a==0?"Alumnos aprobados":"Alumnos reprobados")+"-----------");
+            System.out.println("registros: " + registros);
+            for(int i=0; i<registros;i++)
+            {   
+                output.seek(i*a_tamaRegistro); 
+                noControl = output.readInt();
+               nombre=output.readUTF();
+               semestre = output.readInt();
+               promedio = output.readFloat();
+                System.out.println(noControl);
+                System.out.println(nombre);
+                System.out.println(semestre);
+                System.out.println(promedio);
+                System.out.println("------------------------------------------");
                 
             }
-            FileOutputStream fichero = new FileOutputStream(nameFile);
-            ObjectOutputStream pipe = new ObjectOutputStream(fichero);
-            list.add(a);
-            pipe.writeObject(list);
-            pipe.close();
-            pipe.flush();
-            fichero.close();
-            fichero.flush();
+            output.close();
         }
+        catch (IOException e)
+        {
+            System.out.println(" No se abrio bien el fichero \n"+e.toString());
+        }
+    }
+    }
+
+
+    public void modificar() throws IOException{
+        System.out.println("Ingresa el noControl del alumno");
+        int noControl=sc.nextInt();
+        Alumno alumno = buscar(noControl);
+        try {
+            if(alumno!=null){
+                System.out.println("Ingresa el nuevo promedio del alumno");
+                Float newPromedio = sc.nextFloat();
+                fileTemp((alumno.getPromedio()<70?"reprobados.dat":"aprobados.dat"));
+                RandomAccessFile temp=new RandomAccessFile("temp.dat","rw");
+                RandomAccessFile file=new RandomAccessFile((alumno.getPromedio()<70?"reprobados.dat":"aprobados.dat"),"rw");
+                alumno.setPromedio(newPromedio);
+                long registros=temp.length()/a_tamaRegistro;
+                int i=0, j=0;
+            for(i=0; i<registros;i++)
+            {   
+                temp.seek(i*a_tamaRegistro);
+                int tempNoControl = temp.readInt();
+                if(tempNoControl!=alumno.getNoControl()){
+                String tempNombre=temp.readUTF();
+                int tempSemestre = temp.readInt();
+                float tempPromedio = temp.readFloat();
+                file.seek(j*a_tamaRegistro);
+                file.writeInt(tempNoControl);
+                file.writeUTF(tempNombre);
+                file.writeInt(tempSemestre);
+                file.writeFloat(tempPromedio);
+                j++;
+                }
+            }
+            temp.close();
+            file.close();
+            insertStudent(alumno, (alumno.getPromedio()<70?"reprobados.dat":"aprobados.dat"));
+            }
+            else System.out.println("No se encontro");
+        } catch (FileNotFoundException e) {
+
+            e.printStackTrace();
+        }
+    }
+
+
+    public Alumno buscar(int noControl){
+        RandomAccessFile output;
+        for(int a =0;a<2;a++){
+        try
+        {
+            output=new RandomAccessFile((a==0?"aprobados.dat":"reprobados.dat"),"rw");
+            long registros=output.length()/a_tamaRegistro;
+            for(int i=0; i<registros;i++)
+            {   
+                output.seek(i*a_tamaRegistro);  
+               int auxNoControl = output.readInt();
+               if(auxNoControl == noControl){
+                String nombre = output.readUTF();
+                int semestre = output.readInt();
+                Float promedio = output.readFloat();
+                Alumno alumno = new Alumno(nombre, noControl, semestre, promedio);
+                output.close();
+                return alumno;
+               }
+            }
+            output.close();
+        }
+        catch (IOException e)
+        {
+            System.out.println(" No se abrio bien el fichero \n"+e.toString());
+        }
+    }
+        return null;
+    }
+
+    public void fileTemp(String fileName){
+        Path origenPath = FileSystems.getDefault().getPath(fileName);
+        Path destinoPath = FileSystems.getDefault().getPath("temp.dat");
+
+        try {
+            Files.move(origenPath, destinoPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+    }
+
     }
